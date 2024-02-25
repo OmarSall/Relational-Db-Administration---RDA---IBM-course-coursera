@@ -1,0 +1,658 @@
+Lab 1
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql
+
+MzI3MDctb21hcnNh
+
+MySQL CLI:
+
+CREATE DATABASE world;
+
+USE world;
+
+SOURCE world_mysql_script.sql;
+
+SHOW TABLES;
+
+SHOW ENGINES;
+
+CREATE TABLE csv_test (i INT NOT NULL, c CHAR(10) NOT NULL) ENGINE = CSV;
+
+SHOW TABLES;
+
+INSERT INTO csv_test VALUES(1,'data one'),(2,'data two'),(2,'data three');
+
+SELECT * FROM csv_test;
+
+SHOW DATABASES;
+
+USE mysql;
+
+SHOW TABLES;
+
+SELECT User from user;
+
+CREATE USER test_user;
+
+SELECT User from user;
+
+SHOW DATABASES;
+
+USE information_schema;
+
+SELECT COLUMN_NAME FROM COLUMNS WHERE TABLE_NAME = 'country';
+
+SELECT table_name, engine FROM INFORMATION_SCHEMA.TABLES 
+WHERE table_name = 'country' OR table_name = 'city' 
+OR table_name = 'countrylanguage' OR table_name = 'csv_test';
+
+SELECT table_name, (data_length + index_length)/1024 FROM INFORMATION_SCHEMA.TABLES 
+WHERE table_name = 'country' OR table_name = 'city' 
+OR table_name = 'countrylanguage' OR table_name = 'csv_test';
+
+
+1. Try it yourself: First, connect to the world database using the CLI:
+
+USE world;
+
+2. Try it yourself: Create a new table called MyISAM_test that uses the MYISAM storage engine
+
+CREATE TABLE MyISAM_test (i INT NOT NULL, c CHAR(10) NOT NULL) ENGINE = MYISAM;
+
+3. Try it yourself: Next, you’ll want to query a table in the information_schema database, but before that, you’ll have to connect to the database first. Use the CLI to connect to the information_schema database.
+
+USE information_schema;
+
+4. Try it yourself: Using the CLI, query the TABLES table in the information_schema database to display the table_name and engine columns of all tables that have table_schema = 'world'. Confirm that the table you created in this exercise is there and it has the correct storage engine.
+
+
+SELECT table_name, engine FROM INFORMATION_SCHEMA.TABLES
+WHERE table_schema = 'world';
+
+---------------------------------------------------------------------------
+Lab2 PostgreSQL Instance Configuration and System Catalog
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql
+
+ psql --username=postgres --host=loc
+
+\i flights_RUSSIA_small.sql
+
+Verify that the database was properly created by entering the following command:
+
+\dt
+
+Exercise 1: Configure Your PostgreSQL Server Instance
+
+
+SHOW wal_level;
+
+ALTER SYSTEM SET wal_level = 'logical';
+
+restart the postgres
+
+SHOW wal_level;
+
+SELECT * FROM pg_tables WHERE schemaname = 'bookings';
+
+ALTER TABLE boarding_passes ENABLE ROW LEVEL SECURITY;
+
+SELECT name, setting, short_desc FROM pg_settings WHERE name = 'wal_level';
+
+
+In this practice exercise, suppose you wanted to change the name of the aircrafts_data to aircraft_fleet
+
+UPDATE pg_tables SET tablename = 'aircraft_fleet' WHERE tablename = 'aircrafts_data';
+
+!!!changing individual values in a system catalog directly can severely mess up your database. Let’s try a different approach.!!! `_("/)_/`
+
+ALTER TABLE aircrafts_data RENAME TO aircraft_fleet;
+
+
+SELECT tablename FROM pg_tables WHERE schemaname = 'bookings';
+-----------------------------------------------------------------
+LAB 3
+https://dataplatform.cloud.ibm.com/exchange/public/entry/view/5562ced564e776edc5f91e13d48d8309?utm_source=Exinfluencer&utm_content=000026UJ&utm_id=NA-SkillsNetwork-Channel-SkillsNetworkCoursesIBMDB0231ENSkillsNetwork26763093-2022-01-01&utm_medium=Exinfluencer&utm_term=10006555&context=cpdaas
+
+
+https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/hospitals.csv
+
+
+SELECT * FROM hospitals;
+
+SELECT count(*) FROM hospitals;
+
+https://datasette-1-labs-prod-misc-tools-us-east-0.labs.cognitiveclass.ai/user/omarsalloum0/user/omarsalloum0/hospitals/hospitals.csv?_size=max
+-------------------------------------------------------
+LAB 4 Backup and restore
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql
+
+
+\i flights_RUSSIA_small.sql
+
+\dt
+
+SELECT * FROM aircrafts_data;
+
+INSERT INTO aircrafts_data(aircraft_code, model, range) VALUES (380, '{"en": "Airbus A380-800"}', 15700);
+
+SELECT * FROM aircrafts_data;
+
+---Backup your Database using pgAdmin---
+
+\q
+
+go to pgadmin
+
+postgres->databases_demo->right click-> backup
+
+demo -> delete-drop
+
+databases -> create->database
+-> database name: restored_demo -> save
+restored demo -> right click -> restore -> file name -> ... -> demo_backup -> restore
+
+-----CLI-----
+\connect restored_demo
+SELECT pg_catalog.set_config('search_path', 'bookings', false);
+\dt
+SELECT * FROM aircrafts_data;
+
+\q
+
+
+
+exercise
+SELECT * FROM tickets WHERE booking_ref = '0002D8';
+UPDATE tickets SET passenger_name = 'SANYA KORELEVA' WHERE booking_ref = '0002D8';
+pg_dump --username=postgres --host=localhost restored_demo > restored_demo_backup.sql
+
+---------------------------------------------------------
+LAB 5
+Backup and Restore using MySQL
+
+OTg1MC1vbWFyc2Fs
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_update_A.sql
+
+MySQl CLI
+
+CREATE DATABASE world;
+USE world;
+SOURCE world_mysql_script.sql;
+SHOW TABLES;
+
+SELECT * FROM countrylanguage WHERE countrycode='CAN';
+
+SOURCE world_mysql_update_A.sql;
+
+\q
+
+mysqldump --host=127.0.0.1 --port=3306 --user=root --password world countrylanguage > world_countrylanguage_mysql_backup.sql
+
+cat world_countrylanguage_mysql_backup.sql
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="DROP TABLE world.countrylanguage;"
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SHOW TABLES FROM world;"
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password world < world_countrylanguage_mysql_backup.sql
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world.countrylanguage WHERE countrycode='CAN';"
+
+--------------------------------------Example Exercise B: Perform Point-in-Time Backup and Restore----------------------------------
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_update_B.sql
+
+mysqldump --host=127.0.0.1 --port=3306 --user=root --password --flush-logs --delete-master-logs  --databases world > world_mysql_full_backup.sql
+
+NOTE: The two parameters in the command above, --flush-logs (starts writing to a new binlog file) and --delete-master-logs (removes old binlog files) ensures that there will be only binary log files created after a full logical backup.
+
+CLI
+
+use world;
+
+SHOW TABLES;
+
+source world_mysql_update_B.sql;
+
+\q
+
+docker exec mysql-mysql-1 rm -rf /var/lib/mysql/world
+
+docker exec -it mysql-mysql-1 mysqladmin -p shutdown
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world.city;"
+
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SHOW BINARY LOGS;"
+
+docker exec mysql-mysql-1 mysqlbinlog /var/lib/mysql/binlog.000003 /var/lib/mysql/binlog.000004 > logfile.sql
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password < world_mysql_full_backup.sql
+
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world.city WHERE countrycode='CAN';"
+
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password < logfile.sql
+
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world.city WHERE countrycode='CAN';"
+
+-------------------------------------------Example Exercise C: Perform Physical Backup and Restore-----------------------------------------
+
+docker cp mysql-mysql-1:/var/lib/mysql /home/project/mysql_backup
+
+for a particular table use: docker cp mysql-mysql-1:/var/lib/mysql/world /home/project/mysql_world_backup
+
+docker cp /home/project/mysql_backup/. mysql-mysql-1:/var/lib/mysql
+
+
+-----practice------
+Scenario: You are planning to update and migrate one of the tables from your world database to a new MySQL server. Perform a logical backup of the table city from the database world. The backup table is expected to contain data of Bangladesh. Validate if your created backup is in working state.
+
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_update_1.sql
+
+CLI
+
+create database world_P1;
+use world_P1;
+source world_mysql_script.sql;
+SELECT * FROM city WHERE countrycode='BGD';
+source world_mysql_update_1.sql;
+SELECT * FROM city WHERE countrycode='BGD';
+\q
+
+---performing logical backup------
+mysqldump --host=127.0.0.1 --port=3306 --user=root --password world_P1 city > world_P1_city_mysql_backup.sql
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="DROP TABLE world_P1.city;"
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world_P1.city;"
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password world_P1 < world_P1_city_mysql_backup.sql
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world_P1.city;"
+
+
+
+------------------------Physical Backup-------------------------------
+Scenario: Perform a physical backup of the database world. The backup database is expected to contain data of Canada as well as Bangladesh.
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_update_2.sql
+
+CLI
+create database world_P2;
+
+use world_P2;
+
+source world_mysql_script.sql;
+
+SELECT * FROM country WHERE code in ('BGD','CAN');
+SELECT * FROM countrylanguage WHERE countrycode in ('BGD','CAN');
+SELECT * FROM city WHERE countrycode in ('BGD','CAN');
+
+source world_mysql_update_2.sql;
+
+SELECT * FROM country WHERE code in ('BGD','CAN');
+SELECT * FROM countrylanguage WHERE countrycode in ('BGD','CAN');
+SELECT * FROM city WHERE countrycode in ('BGD','CAN');
+
+\q
+
+------Perform a physical backup of the database.------
+docker cp mysql-mysql-1:/var/lib/mysql/world_P2 /home/project/mysql_world_P2_backup
+
+docker exec mysql-mysql-1 rm -rf /var/lib/mysql/world_P2
+
+docker exec -it mysql-mysql-1 mysqladmin -p shutdown
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world_P2.city;"
+
+docker cp /home/project/mysql_world_P2_backup/. mysql-mysql-1:/var/lib/mysql/world_P2
+
+
+docker exec -it mysql-mysql-1 mysqladmin -p shutdown
+mysql --host=127.0.0.1 --port=3306 --user=root --password --execute="SELECT * FROM world_P2.city;"
+
+
+
+------------------------------LAB 6--ACCESS CONTROL AND ENCRYPTION------------------------------------------------------
+->php myadmin
+CREATE USER 'db_owner'@'localhost' IDENTIFIED WITH caching_sha2_password BY '***';GRANT ALL PRIVILEGES ON *.* TO 'db_owner'@'localhost' WITH GRANT OPTION;ALTER USER 'db_owner'@'localhost' REQUIRE NONE WITH MAX_QUERIES_PER_HOUR 0 MAX_CONNECTIONS_PER_HOUR 0 MAX_UPDATES_PER_HOUR 0 MAX_USER_CONNECTIONS 0;
+
+
+MySql CLI
+
+SET @key_str = SHA2('My secret passphrase', 512);
+
+USE world;
+
+SELECT * FROM countrylanguage LIMIT 5;
+
+Encrypting a column:
+
+ALTER TABLE countrylanguage MODIFY COLUMN Percentage varbinary(255);
+
+UPDATE countrylanguage SET Percentage = AES_ENCRYPT(Percentage, @key_str);
+
+SELECT cast(AES_DECRYPT(Percentage, @key_str) as char(255)) FROM countrylanguage;
+
+---------------------LAB 7 ----------- USER MANAGEMENT--------------------------
+postgreSQL
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql
+
+\i flights_RUSSIA_small.sql
+
+\dt
+
+CREATE ROLE read_only;
+
+GRANT CONNECT ON DATABASE demo TO read_only;
+
+GRANT USAGE ON SCHEMA bookings TO read_only;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA bookings TO read_only;
+
+
+CREATE ROLE read_write;
+
+GRANT CONNECT ON DATABASE demo TO read_write;
+
+GRANT USAGE ON SCHEMA bookings TO read_write;
+
+GRANT SELECT, INSERT, DELETE, UPDATE ON ALL TABLES IN SCHEMA bookings TO read_write;
+
+-----------Add a New User and Assign them a Relevant Role
+
+CREATE USER user_a WITH PASSWORD 'user_a_password';
+
+GRANT read_only TO user_a;
+
+\du
+
+------------Revoke and Deny Access
+
+REVOKE SELECT ON aircrafts_data FROM user_a;
+
+REVOKE read_only FROM user_a;
+
+\du
+
+---------------------LAB 8 -------------------------------------------------------
+----Improving performance of slow queries----------------------------------
+
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/employeesdb.zip
+
+unzip employeesdb.zip
+
+cd employeesdb
+
+mysql --host=127.0.0.1 --port=3306 --user=root --password -t < employees.sql
+
+MTQ5MjUtb21hcnNh
+
+mysql CLI
+
+use employees
+
+show tables;
+
+SELECT * FROM employees;
+
+EXPLAIN SELECT * FROM employees;
+
+SHOW INDEX FROM employees;
+
+SELECT * FROM employees WHERE hire_date >= '2000-01-01';
+
+EXPLAIN SELECT * FROM employees WHERE hire_date >= '2000-01-01';
+
+CREATE INDEX hire_date_index ON employees(hire_date);
+
+
+SHOW INDEX FROM employees;
+
+SELECT * FROM employees WHERE hire_date >= '2000-01-01';
+
+
+EXPLAIN SELECT * FROM employees WHERE hire_date >= '2000-01-01';
+
+DROP INDEX hire_date_index ON employees;
+
+------------Use an UNION ALL Clause
+
+SELECT * FROM employees WHERE first_name LIKE 'C%' OR last_name LIKE 'C%';
+
+EXPLAIN SELECT * FROM employees WHERE first_name LIKE 'C%' OR last_name LIKE 'C%';
+
+CREATE INDEX first_name_index ON employees(first_name);
+CREATE INDEX last_name_index ON employees(last_name);
+
+SELECT * FROM employees WHERE first_name LIKE 'C%' OR last_name LIKE 'C%';
+
+EXPLAIN SELECT * FROM employees WHERE first_name LIKE 'C%' OR last_name LIKE 'C%';
+
+SELECT * FROM employees WHERE first_name LIKE 'C%' UNION ALL SELECT * FROM employees WHERE last_name LIKE 'C%';
+
+
+EXPLAIN SELECT * FROM employees WHERE first_name LIKE 'C%' UNION ALL SELECT * FROM employees WHERE last_name LIKE 'C%';
+
+
+-----phpMyAdmin
+
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0231EN-SkillsNetwork/datasets/World/world_mysql_script.sql
+
+CLI
+
+CREATE DATABASE world;
+
+USE world;
+
+----> execute the MySQL script containing the data that we downloaded. This file will create tables and insert data into those tables.
+
+SOURCE world_mysql_script.sql;
+
+SHOW TABLES;
+
+
+----------------------------LAB 9 ------------------------------------------
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/example-guided-project/flights_RUSSIA_small.sql
+
+
+\i flights_RUSSIA_small.sql
+
+\dt
+
+-------Monitor Your Database
+
+SELECT pid, usename, datname, state, state_change FROM pg_stat_activity;
+SELECT pid, usename, datname, state, state_change, query FROM pg_stat_activity;
+SELECT pid, usename, datname, state, state_change, query FROM pg_stat_activity WHERE state = 'active';
+
+SELECT datname, tup_inserted, tup_updated, tup_deleted FROM pg_stat_database;
+SELECT datname, tup_fetched, tup_returned FROM pg_stat_database;
+SELECT datname, tup_inserted, tup_updated, tup_deleted, tup_fetched, tup_returned FROM pg_stat_database WHERE datname = 'demo';
+
+-------Monitor Performance Over Time
+
+CREATE EXTENSION pg_stat_statements;
+
+ALTER SYSTEM SET shared_preload_libraries = 'pg_stat_statements';
+
+\connect demo
+
+\dx
+
+show shared_preload_libraries;
+
+\x
+
+SELECT dbid, query, total_exec_time FROM pg_stat_statements;
+
+SELECT oid, datname FROM pg_database;
+
+DROP EXTENSION pg_stat_statements;
+
+
+ALTER SYSTEM RESET shared_preload_libraries;
+
+----------------------------------------
+CLI
+\timing
+
+
+-------------automation, scripting with DBs--------------
+wget https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DB0110EN-SkillsNetwork/datasets/sakila/sakila_mysql_dump.sql
+
+start_mysql
+
+sudo nano ~/.my.cnf
+
+[mysql]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password> !!!!!!!!!!!!!!!! change password
+
+[mysqlimport]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password>
+
+[mysqldump]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password>
+
+[mysqlshow]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password>
+
+[mysqlcheck]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password>
+
+[mysqladmin]
+host = 127.0.0.1
+port = 3306
+user = root
+password = <Your MySQL Password>
+
+
+ctrl+o
+ctrl+x
+
+mysql
+
+create database sakila;
+
+use sakila;
+
+source sakila_mysql_dump.sql;
+
+SHOW FULL TABLES WHERE table_type = 'BASE TABLE';
+---------------------------------------------------
+You will create a shell script that does the following:
+
+Writes the database to an sqlfile created with a timestamp, using the mysqldump command
+
+Zips the sqlfile into a zip file using the gzip command
+
+Removes the sqlfile using rm command
+
+Deletes the backup after 30 days
+
+
+
+#!/bin/sh
+# The above line tells the interpreter this code needs to be run as a shell script.
+
+# Set the database name to a variable. 
+DATABASE='sakila'
+
+# This will be printed on to the screen. In the case of cron job, it will be printed to the logs.
+echo "Pulling Database: This may take a few minutes"
+
+# Set the folder where the database backup will be stored
+backupfolder=/home/theia/backups
+
+# Number of days to store the backup 
+keep_day=30
+
+sqlfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).sql
+zipfile=$backupfolder/all-database-$(date +%d-%m-%Y_%H-%M-%S).gz
+
+# Create a backup
+
+if mysqldump  $DATABASE > $sqlfile ; then
+   echo 'Sql dump created'
+    # Compress backup 
+    if gzip -c $sqlfile > $zipfile; then
+        echo 'The backup was successfully compressed'
+    else
+        echo 'Error compressing backupBackup was not created!' 
+        exit
+    fi
+    rm $sqlfile 
+else
+   echo 'pg_dump return non-zero code No backup was created!' 
+   exit
+fi
+
+# Delete old backups 
+find $backupfolder -mtime +$keep_day -delete
+
+
+-----
+
+sudo chmod u+x+r sqlbackup.sh
+
+crontab -e
+
+*/2 * * * * /home/project/sqlbackup.sh > /home/project/backup.log
+
+sudo service cron start
+
+ls -l /home/theia/backups
+
+--------------------------------------------------
+#!/bin/sh
+ 
+DATABASE=sakila
+
+mysql -Nse 'show tables' sakila | \
+    while read table; do mysql --host=127.0.0.1 --port=3306 \
+    -e "use sakila;SET FOREIGN_KEY_CHECKS=0;truncate table $table;SET FOREIGN_KEY_CHECKS=1;" ;done
+
+
+sudo chmod u+x+r truncate.sh
+
+sudo ./truncate.sh
+
+sudo ./truncate.sh
+
+mysql
+ use sakila;
+show tables;
+  select * from staff;
+\q
+
+
+-----------Restore the Database
+
+ls -l /home/theia/backups
+gunzip /home/theia/backups/<backup zip file name>
+mysql sakila < /home/theia/backups/<backup sql file name>
